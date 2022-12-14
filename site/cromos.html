@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: antiquewhite;
+            font-family: Arial, Helvetica, sans-serif;
+            margin:0;
+        }
+        .cromo {
+            width:40px;
+            height:60px;
+            text-align:center;
+            border:0 solid;
+            margin-right:6px;
+            margin-bottom:3px;
+            box-shadow: 1px 1px;
+            background-color: white;
+        }
+        .falta {
+            background-color: lightcoral;
+        }
+        .cromonum {
+            width:40px;
+            margin:2px;
+            font:bold 24px arial;
+            cursor: pointer;
+        }
+        .cromor {
+            display:flex;
+            justify-content:center;
+            font:18px arial;
+            padding:2px;
+        }
+        .cromotitle {
+            font:24px arial;
+            margin: 4px;
+        }
+        .hand {
+            cursor: pointer;
+        }
+        #divAuth {
+            padding:10px;
+        }
+        #divNav {
+            display:flex;background-color: black;color:white;padding:6px;cursor:pointer;
+        }
+        #divNav>div{
+            margin-left:6px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div id="divNav">
+            <div id=btnUser onclick="UI.user()">Utilizador</div>
+            <div>|</div>
+            <div id=btnEditar onclick="UI.editar()">Editar</div>
+            <div>|</div>
+            <div id=btnGravar onclick="UI.gravar()">Gravar</div>
+        </div>
+        <div id="divAuth" style="display:none;background-color: bisque;">
+            <div>
+                <div>Email</div>
+                <div><input type=text id="email" value="user@email.pt"></div>
+            </div>
+            <div>
+                <div>Senha</div>
+                <div><input type=password id="password" value="password"></div>
+            </div>
+            <div>
+                <div>&nbsp;</div>
+                <div><button onclick="UI.auth()">OK</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin:6px">
+        <div>Colecções</div>
+        <select id="divColecoes" onchange="UI.change()"><option>Escolha</option></select>
+    </div>
+
+    <div id="render" style="margin:10px;"></div>
+    
+    <script>
+        var autenticado=false;
+        var o=new Option("Qatar 2022");
+        document.getElementById("divColecoes").appendChild(o)
+
+
+    var UI={
+        change:async function(){
+            var c=document.getElementById("divColecoes").value;
+            var e=document.getElementById("email").value;
+            var p=document.getElementById("password").value;
+            
+            if (c!="Escolha"){
+                let response = await fetch(`/api/load?c=${c}&e=${e}&p=${p}`);
+                let result = await response.json();
+                col=result;
+                document.getElementById("render").innerHTML=render(struct,"");
+            }
+
+        },
+        freeze:function(btn){
+            document.getElementById(btn).style.color="gray";
+        },
+        unfreeze:function(btn){
+            document.getElementById(btn).style.color="white";
+        },
+        user:function(){
+            document.getElementById("divAuth").style.display="flex";
+            UI.freeze("btnEditar");
+            UI.freeze("btnGravar");
+        },
+        editar:function(){
+            if (!autenticado){
+                document.getElementById("divAuth").style.display="flex";
+                UI.freeze("btnEditar");
+                UI.freeze("btnGravar");
+            }
+            else
+            {
+                UI.freeze("btnEditar");
+                UI.unfreeze("btnGravar");
+                document.getElementById("render").innerHTML=render(struct,"EDIT");
+            }
+        },
+        auth:function(){
+            autenticado=true;
+            document.getElementById("divAuth").style.display="none";
+            document.getElementById("btnUser").innerText=email.value;
+            UI.freeze("btnEditar");
+            UI.unfreeze("btnGravar");
+
+            document.getElementById("render").innerHTML=render(struct,"EDIT");
+        },
+        gravar:async function(){
+            var c=document.getElementById("divColecoes").value;
+            var e=document.getElementById("email").value;
+            var p=document.getElementById("password").value;
+            
+            if (c!="Escolha"){
+                let response = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                    },
+                    body: JSON.stringify({c:c,e:e,p:p,d:col})
+                });
+
+                let result = await response.json();
+                if (result=="true")
+                    alert("Gravado")
+                else
+                    alert(result)
+            }
+            UI.unfreeze("btnEditar");
+            UI.freeze("btnGravar");
+
+            document.getElementById("render").innerHTML=render(struct,"");
+        }
+    }
+        UI.freeze("btnEditar");
+        UI.freeze("btnGravar");
+
+        var struct={
+            title:"Qatar 2022",
+            forceShow:true,
+            options:[
+                {title:"FWC",options:[{min:0,max:28}]},
+                {title:"ARG",options:[{min:1,max:20}]},
+                {title:"AUS",options:[{min:1,max:20}]},
+                {title:"BEL",options:[{min:1,max:20}]},
+                {title:"BRA",options:[{min:1,max:20}]},
+                {title:"CAN",options:[{min:1,max:20}]},
+                {title:"CMR",options:[{min:1,max:20}]},
+                {title:"CRC",options:[{min:1,max:20}]},
+                {title:"CRO",options:[{min:1,max:20}]},
+                {title:"DEN",options:[{min:1,max:20}]},
+                {title:"ECU",options:[{min:1,max:20}]},
+                {title:"ENG",options:[{min:1,max:20}]},
+                {title:"ESP",options:[{min:1,max:20}]},
+                {title:"FRA",options:[{min:1,max:20}]},
+                {title:"GER",options:[{min:1,max:20}]},
+                {title:"GHA",options:[{min:1,max:20}]},
+                {title:"IRN",options:[{min:1,max:20}]},
+                {title:"JPN",options:[{min:1,max:20}]},
+                {title:"KOR",options:[{min:1,max:20}]},
+                {title:"KSA",options:[{min:1,max:20}]},
+                {title:"MAR",options:[{min:1,max:20}]},
+                {title:"MEX",options:[{min:1,max:20}]},
+                {title:"NED",options:[{min:1,max:20}]},
+                {title:"POL",options:[{min:1,max:20}]},
+                {title:"POR",options:[{min:1,max:20}]},
+                {title:"QAT",options:[{min:1,max:20}]},
+                {title:"SEN",options:[{min:1,max:20}]},
+                {title:"SRB",options:[{min:1,max:20}]},
+                {title:"SUI",options:[{min:1,max:20}]},
+                {title:"TUN",options:[{min:1,max:20}]},
+                {title:"URU",options:[{min:1,max:20}]},
+                {title:"USA",options:[{min:1,max:20}]},
+                {title:"WAL",options:[{min:1,max:20}]}
+            ]
+        }
+
+        var col={falta:[],rep:[]}
+        //var col={falta:['DEN_16'],rep:[{id:'DEN_17',v:1},{id:'DEN_19',v:1},{id:'WAL_20',v:2}]}
+
+        function falta(id){
+            console.log(id)
+            var c=document.getElementById(id).className;
+            if (c.indexOf(" falta")>-1){
+                document.getElementById(id).className=c.replace(" falta","");
+                var i=col.falta.findIndex(I=>I==id);
+                col.falta.splice(i,1);
+                document.getElementById(id + "_e").style.display="flex";
+            }
+            else{
+                col.falta.push(id)
+                document.getElementById(id).className+=" falta";
+                document.getElementById(id + "_e").style.display="none";
+            }
+            console.log(col)
+        }
+        function repet(id,dir){
+            var idCor=id.substring(0,id.length-2);
+            var i=col.rep.findIndex(I=>I.id==idCor);
+            if (i>-1){
+                col.rep[i].v+=dir;
+                var v=col.rep[i].v;
+                if (col.rep[i].v==0)
+                    col.rep.splice(i,1)
+            }
+            else
+            {
+                col.rep.push({id:idCor,v:1});
+                var v=1;
+            }
+            if (dir)
+                document.getElementById(id).innerHTML=v;
+                console.log(col)
+        }
+        function render(elem,displayMode){
+            var s="";
+            var bFaltaAlgum=false;
+            var bTemRepetidos=false;
+            if (elem.title) {
+                s+="<div class=cromotitle>" + elem.title + "</div>";
+            }
+            for(var f=0;f<elem.options.length;f++){
+                var bLeaf=true;
+                if (elem.options[f].options)
+                    bLeaf=false
+
+                    if (elem.options[f].max){
+                        s+="<div style='display:flex;flex-wrap:wrap;'>"
+                        for(var g=elem.options[f].min;g<=elem.options[f].max;g++){
+                            var sClass="cromo";
+                            var elemId=elem.title+ "_" + g;
+                            var bFalta=false;
+                            if (col.falta.findIndex(I=>I==elemId)>-1)
+                            {
+                                bFalta=true;
+                                bFaltaAlgum=true;
+                                sClass="cromo falta";
+                            }
+                            var nRep=0;
+                            var r=col.rep.findIndex(I=>I.id==elemId);
+                            if (r>-1)
+                            {
+                                nRep=col.rep[r].v;
+                                if (nRep>0){
+                                    bTemRepetidos=true;
+                                }
+                            }
+                            if (displayMode=="EDIT"){
+                                s+=`<div id="${elem.title}_${g}" class="${sClass}">
+                                    <div class=cromonum onclick=falta('${elem.title}_${g}')>${g}</div>
+                                <div class="cromor" id="${elem.title}_${g}_e">
+                                        <div class=hand onclick=repet("${elem.title}_${g}_R",-1)>-</div>
+                                        <div id="${elem.title}_${g}_R">${nRep}</div>
+                                        <div class=hand onclick=repet("${elem.title}_${g}_R",1)>+</div>
+                                </div>
+                                </div>`
+                            }
+                            else
+                            {
+                                if(bFalta || nRep>0){
+                                    s+=`<div id="${elem.title}_${g}" class="${sClass}">
+                                    <div class=cromonum>${g}</div>`;
+                                    if (!bFalta){
+                                        s+= `<div class="cromor" id="${elem.title}_${g}_e">
+                                            <div id="${elem.title}_${g}_R">${nRep}</div>
+                                            </div>`
+                                    }
+                                s+="</div>";
+                                }
+                            }
+                        }
+                        s+="</div>"
+                    }
+
+                if (!bLeaf)
+                    s+=render(elem.options[f], displayMode);
+            }
+            if (displayMode!="EDIT" && !elem.forceShow){
+                if (!(bFaltaAlgum || bTemRepetidos))
+                    s="";
+            }
+            return s;
+        }
+       
+        //document.getElementById("render").innerHTML=render(struct,"");
+
+        var col={
+            falta:['DEN_16','USA_19'],
+            rep:[{id:'DEN_17',v:1},{id:'DEN_19',v:1}]}
+        var col1={
+            falta:['DEN_19'],
+            rep:[{id:'DEN_16',v:2},{id:'USA_19',v:1}]}
+
+// colid, email, date_update
+
+        function encontra(col,col1){
+            var list=[];
+            //falta
+            for(var f=0;f<col.falta.length;f++)
+            {
+                var falta=col.falta[f];
+                var encIndex=col1.rep.findIndex(R=>R.id==falta);
+
+                if(encIndex>-1){
+                    list.push(falta);
+                }
+            }
+            return list;
+        }
+
+        console.log("Encontrei:")
+        console.log(encontra(col,col1));
+        console.log("Para trocar:")
+        console.log(encontra(col1,col));
+</script>
+</body>
+</html>
+
