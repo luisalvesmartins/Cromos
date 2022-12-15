@@ -12,6 +12,7 @@ class DB
               return console.error(err.message);
             }
           });
+          var r=await this.queryAsync('PRAGMA journal_mode=WAL;');
           try {
             var r=await this.queryAsync("SELECT 1 FROM cromos");
           } catch (error) {

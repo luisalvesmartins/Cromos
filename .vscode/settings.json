@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/ac01e7fb-565b-4b47-8f51-155b7d12c7e4/appservices/subscriptions/ac01e7fb-565b-4b47-8f51-155b7d12c7e4/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/lamcromos",
+    "appService.deploySubpath": "."
+}

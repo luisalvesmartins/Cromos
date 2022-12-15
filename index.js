@@ -35,7 +35,7 @@ async function a(){
     await database.open();
 }
 
-var server = app.listen(3000, async function () {
+var server = app.listen(process.env.PORT || 3000, async function () {
     await a();
     var host = server.address().address
     var port = server.address().port
