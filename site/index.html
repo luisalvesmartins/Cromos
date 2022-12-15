@@ -21,11 +21,11 @@
         <div id="divAuth" style="display:flex;background-color: bisque;">
             <div>
                 <div>Email</div>
-                <div><input type=text id="email" value="user@email.pt"></div>
+                <div><input type=text id="email" value=""></div>
             </div>
             <div>
                 <div>Senha</div>
-                <div><input type=password id="password" value="password"></div>
+                <div><input type=password id="password" value=""></div>
             </div>
             <div>
                 <div>&nbsp;</div>
@@ -59,7 +59,7 @@
         <b>Procurar</b>
         A opção "Procurar" irá mostrar a lista de todos os utilizadores que têm pelo menos um cromo que te faça falta. Só terás que pedir para ser contactado e combinar como farás a troca. Ao carregar em "Pedir" o outro utilizador vai ter acesso ao teu email e vai-te contactar.
         <b>Partilhar</b>
-        Para partilhar a tua lista com outras pessoas bastará copiares o link que aparece à frente do título da colecção.
+        Para partilhar a tua lista com outras pessoas bastará copiares o link que aparece à frente do título da colecção. Este link só aparece depois da selecção estar gravada.
     </div>
 
     <div id="render" style="margin:10px;"></div>
@@ -317,8 +317,12 @@ return obj;
             }
         },
         auth:function(){
-            autenticado=true;
-            UI.redraw();
+            var e=document.getElementById("email").value;
+            var p=document.getElementById("password").value;
+            if (e!="" && p!=""){
+                autenticado=true;
+                UI.redraw();
+            }
         },
         gravar:async function(){
             if (!autenticado){
