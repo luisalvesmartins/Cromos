@@ -4,55 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        body {
-            background-color: antiquewhite;
-            font-family: Arial, Helvetica, sans-serif;
-            margin:0;
-        }
-        .cromo {
-            width:40px;
-            height:60px;
-            text-align:center;
-            border:0 solid;
-            margin-right:6px;
-            margin-bottom:3px;
-            box-shadow: 1px 1px;
-            background-color: white;
-        }
-        .falta {
-            background-color: lightcoral;
-        }
-        .cromonum {
-            width:40px;
-            margin:2px;
-            font:bold 24px arial;
-            cursor: pointer;
-        }
-        .cromor {
-            display:flex;
-            justify-content:center;
-            font:18px arial;
-            padding:2px;
-        }
-        .cromotitle {
-            font:24px arial;
-            margin: 4px;
-        }
-        .hand {
-            cursor: pointer;
-        }
-        #divAuth {
-            padding:10px;
-        }
-        #divNav {
-            display:flex;background-color: black;color:white;padding:6px;cursor:pointer;
-        }
-        #divNav>div{
-            margin-left:6px;
-        }
-    </style>
+    <title>Cromos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div>
@@ -81,32 +34,190 @@
         </div>
     </div>
 
-    <div id="divEscolha" style="margin:6px;display:none;">
-        <div>Colecções</div>
-        <select id="divColecoes" onchange="UI.change()"><option>Escolha</option></select>
+    <div style="display:flex;align-items:flex-end">
+        <div id="divEscolha" style="margin:6px;display:none;">
+            <div>Colecções</div>
+            <select id="divColecoes" onchange="UI.change()"><option>Escolha</option></select>
+        </div>
+        <div id="divLinkOut" style="margin: 6px 26px;display:none;background-color:aliceblue;padding:2px;font-size: 14px;">
+            <div>Link para partilhar:</div>
+            <div style="display:flex">
+            <div id="divLink"></div>&nbsp;<button style="font-size:12px" onclick="copyToClipBoard()">COPY</button>
+        </div>
+        </div>
     </div>
 
     <div id="divIntro">
-        Instrucções
-        <ul>
-            <li>Para que serve<ul>
-            <li>Guardar</li>
-            <li>Procurar</li>
-            <li>Partilhar</li></ul></li>
-            <li>Sobre a Autenticação</li>
-            <li>Legenda</li>
-        </ul>
+        <b>CROMOS</b><br><br>
+        Este site permite que faças a gestão dos cromos que te faltam e dos repetidos. E ajusa-te a encontrar outros utilizadores que têm cromos que te faltam.<br>
+        Para isso acontecer o teu email vai ser partilhado aqui e será a forma das outras pessoas comunicarem contigo.<br>
+        Por isso sugerimos que cries um email só para este site.<br>
+        <br>
+        <b>Instrucções</b><br>
+        Depois de colocares um email e um password, escolhe a colecção que queres gerir.<br>
+        Carrega em "Editar" e poderás escolher os cromos que te faltam e os que tens repetidos. Carregando sobre o cromo ele fica "em falta" e a vermelho. Depois carrega em "Gravar" e as tuas alterações ficam guardadas.<br>
+        <b>Procurar</b>
+        A opção "Procurar" irá mostrar a lista de todos os utilizadores que têm pelo menos um cromo que te faça falta. Só terás que pedir para ser contactado e combinar como farás a troca. Ao carregar em "Pedir" o outro utilizador vai ter acesso ao teu email e vai-te contactar.
+        <b>Partilhar</b>
+        Para partilhar a tua lista com outras pessoas bastará copiares o link que aparece à frente do título da colecção.
     </div>
 
     <div id="render" style="margin:10px;"></div>
     
     <script>
         var autenticado=false;
-        var o=new Option("Qatar 2022");
-        document.getElementById("divColecoes").appendChild(o)
 
+        async function loadId(idCromos){
+            let response = await fetch(`/api/row?r=${idCromos}`);
+            var id=null;
+            try {
+                let result = await response.json();
+                col=JSON.parse(result.data);
+                colecao=result.colecao;
+                document.getElementById("divColecoes").value=colecao;
+            } catch (error) {
+                col={falta:[],rep:[]}                        
+            }
+            document.getElementById("divAuth").style.display="none";
+            document.getElementById("divEscolha").style.display="block";
+            document.getElementById("divIntro").style.display="none";
+            document.getElementById("divLinkOut").style.display="none";
+            console.log(JSON.stringify(col))
+            document.getElementById("render").innerHTML=render(struct,"");
+            document.getElementById("render").style.display="block";
+        }
+
+
+        function copyToClipBoard() {
+            var content=document.getElementById("divLink").innerText;
+            navigator.clipboard.writeText(content);
+        }
+
+        function getAllUrlParams(url) {
+
+// get query string from url (optional) or window
+var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+
+// we'll store the parameters here
+var obj = {};
+
+// if query string exists
+if (queryString) {
+
+  // stuff after # is not part of query string, so get rid of it
+  queryString = queryString.split('#')[0];
+
+  // split our query string into its component parts
+  var arr = queryString.split('&');
+
+  for (var i = 0; i < arr.length; i++) {
+    // separate the keys and the values
+    var a = arr[i].split('=');
+
+    // set parameter name and value (use 'true' if empty)
+    var paramName = a[0];
+    var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+
+    // (optional) keep case consistent
+    paramName = paramName.toLowerCase();
+    if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+
+    // if the paramName ends with square brackets, e.g. colors[] or colors[2]
+    if (paramName.match(/\[(\d+)?\]$/)) {
+
+      // create key if it doesn't exist
+      var key = paramName.replace(/\[(\d+)?\]/, '');
+      if (!obj[key]) obj[key] = [];
+
+      // if it's an indexed array e.g. colors[2]
+      if (paramName.match(/\[\d+\]$/)) {
+        // get the index value and add the entry at the appropriate position
+        var index = /\[(\d+)\]/.exec(paramName)[1];
+        obj[key][index] = paramValue;
+      } else {
+        // otherwise add the value to the end of the array
+        obj[key].push(paramValue);
+      }
+    } else {
+      // we're dealing with a string
+      if (!obj[paramName]) {
+        // if it doesn't exist, create property
+        obj[paramName] = paramValue;
+      } else if (obj[paramName] && typeof obj[paramName] === 'string'){
+        // if property does exist and it's a string, convert it to an array
+        obj[paramName] = [obj[paramName]];
+        obj[paramName].push(paramValue);
+      } else {
+        // otherwise add the property
+        obj[paramName].push(paramValue);
+      }
+    }
+  }
+}
+
+return obj;
+}
 
     var UI={
+        pedir:async function(r){
+            var c=document.getElementById("divColecoes").value;
+            var e=document.getElementById("email").value;
+            let response = await fetch(`/api/ask?c=${c}&r=${r}&e=${e}`, async function (req, res) {
+                var result=response.text();
+                if (result=="true" || result==true)
+                        alert("Gravado")
+                    else
+                        alert(result)
+            });
+        },
+        procurar:async function(){
+            var c=document.getElementById("divColecoes").value;
+            var e=document.getElementById("email").value;
+            var p=document.getElementById("password").value;
+
+            if (autenticado){
+                if (c!="Escolha"){
+                    let response = await fetch(`/api/find?c=${c}&e=${e}&p=${p}`);
+                    try {
+                        let result = await response.json();
+
+                        var s="";
+                        if (result.length==0)
+                        {
+                            s="Não há utilizadores com os cromos que procuras"
+                        }
+                        else
+                        {
+                            s+="Estes utilizadores têm estes cromos que procuras:<br>";
+                            for(var f=0;f<result.length;f++)
+                            {
+                                s+="<div onclick='UI.pedir(" + result[f].email + ")' style='cursor:pointer;margin-top:6px;'><b><u>Pedir</u></b></div>";
+                                s+="<div style='display:flex;flex-wrap:wrap;'>";
+                                    for(var g=0;g<result[f].cromos.length;g++){
+                                        var a=result[f].cromos[g].split("_");
+                                        s+="<div>" + a[0] ;
+                                        s+=renderCromo(a[0], a[1], true, 0);
+                                        s+="</div>"
+                                    }
+                                    // + ([f].cromos
+                                s+="</div>";
+                            }
+                        }
+                        document.getElementById("render").innerHTML=s;
+                    } catch (error) {
+                    }
+                }
+                else
+                {
+                    alert("Escolha uma colecção primeiro");
+                }
+
+            }
+            else
+            {
+                alert("Tem que estar autenticado primeiro");
+            }
+        },
         redraw:function(){
             if (autenticado){
                 document.getElementById("divAuth").style.display="none";
@@ -123,6 +234,7 @@
                     document.getElementById("divIntro").style.display="block";
                     UI.freeze("btnEditar");
                 }
+                UI.unfreeze("btnProcurar");
             }
             else
             {
@@ -144,16 +256,32 @@
             if (c!="Escolha"){
                 if (autenticado){
                     let response = await fetch(`/api/load?c=${c}&e=${e}&p=${p}`);
+                    var id=null;
                     try {
                         let result = await response.json();
-                        col=result;                    
+                        col=JSON.parse(result.data);
+                        id=result.id;
                     } catch (error) {
                         col={falta:[],rep:[]}                        
                     }
+                    if (id)
+                        document.getElementById("divLink").innerText=window.location.origin + "?id=" + id;
+                    else
+                        document.getElementById("divLink").innerText="";
+                    document.getElementById("divLinkOut").style.display="block";
                     console.log(JSON.stringify(col))
                     document.getElementById("render").innerHTML=render(struct,"");
                     document.getElementById("render").style.display="block";
                 }
+                else
+                {
+                    alert("Tem que estar autenticado primeiro");
+                }
+            }
+            else
+            {
+                document.getElementById("divLinkOut").style.display="none";
+                document.getElementById("render").style.display="none";
             }
             UI.redraw();
         },
@@ -166,15 +294,13 @@
         user:function(){
             autenticado=false;
             UI.redraw();
-            // document.getElementById("divAuth").style.display="flex";
-            // UI.freeze("btnEditar");
-            // UI.freeze("btnGravar");
         },
         editar:function(){
             if (!autenticado){
-                document.getElementById("divAuth").style.display="flex";
+                // document.getElementById("divAuth").style.display="flex";
                 UI.freeze("btnEditar");
                 UI.freeze("btnGravar");
+                alert("Tem que estar autenticado primeiro");
             }
             else
             {
@@ -184,6 +310,10 @@
                     UI.unfreeze("btnGravar");
                     document.getElementById("render").innerHTML=render(struct,"EDIT");
                 }
+                else
+                {
+                    alert("Escolha uma colecção primeiro");
+                }
             }
         },
         auth:function(){
@@ -192,9 +322,10 @@
         },
         gravar:async function(){
             if (!autenticado){
-                document.getElementById("divAuth").style.display="flex";
+                // document.getElementById("divAuth").style.display="flex";
                 UI.freeze("btnEditar");
                 UI.freeze("btnGravar");
+                alert("Tem que estar autenticado primeiro");
             }
             else
             {
@@ -212,7 +343,7 @@
                     });
 
                     let result = await response.json();
-                    if (result=="true")
+                    if (result=="true" || result==true)
                         alert("Gravado")
                     else
                         alert(result)
@@ -302,6 +433,24 @@
             if (dir)
                 document.getElementById(id).innerHTML=v;
         }
+        function renderCromo(title, num, bFalta, nRep){
+            var sClass="cromo";
+            var sAdd="";
+            if (bFalta) {
+                sClass+=" falta";
+            }
+            else
+            {
+                sAdd= `<div class="cromor" id="${title}_${num}_e">
+                        <div id="${title}_${num}_R">${nRep}</div>
+                        </div>`;
+            }
+            return `<div id="${title}_${num}" class="${sClass}">
+                        <div class=cromonum>${num}</div>
+                        ${sAdd}
+                    </div>`;
+
+        }
         function render(elem,displayMode){
             var s="";
             var bFaltaAlgum=false;
@@ -348,14 +497,7 @@
                             else
                             {
                                 if(bFalta || nRep>0){
-                                    s+=`<div id="${elem.title}_${g}" class="${sClass}">
-                                    <div class=cromonum>${g}</div>`;
-                                    if (!bFalta){
-                                        s+= `<div class="cromor" id="${elem.title}_${g}_e">
-                                            <div id="${elem.title}_${g}_R">${nRep}</div>
-                                            </div>`
-                                    }
-                                s+="</div>";
+                                    s+=renderCromo(elem.title, g, bFalta, nRep);
                                 }
                             }
                         }
@@ -371,37 +513,22 @@
             }
             return s;
         }
-       
-        UI.redraw();
 
-        var col={
-            falta:['DEN_16','USA_19'],
-            rep:[{id:'DEN_17',v:1},{id:'DEN_19',v:1}]}
-        var col1={
-            falta:['DEN_19'],
-            rep:[{id:'DEN_16',v:2},{id:'USA_19',v:1}]}
+        async function init(){
+            var o=new Option("Qatar 2022");
+            document.getElementById("divColecoes").appendChild(o)
 
-// colid, email, date_update
+            UI.redraw();
 
-        function encontra(col,col1){
-            var list=[];
-            //falta
-            for(var f=0;f<col.falta.length;f++)
+            var idCromos=getAllUrlParams().id;
+            if (idCromos!=null)
             {
-                var falta=col.falta[f];
-                var encIndex=col1.rep.findIndex(R=>R.id==falta);
-
-                if(encIndex>-1){
-                    list.push(falta);
-                }
+                console.log(idCromos)
+                await loadId(idCromos);
             }
-            return list;
         }
 
-        console.log("Encontrei:")
-        console.log(encontra(col,col1));
-        console.log("Para trocar:")
-        console.log(encontra(col1,col));
+        window.onload=init;
 </script>
 </body>
 </html>

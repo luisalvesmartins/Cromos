@@ -1,0 +1,49 @@
+body {
+    background-color: antiquewhite;
+    font-family: Arial, Helvetica, sans-serif;
+    margin:0;
+}
+.cromo {
+    width:40px;
+    height:60px;
+    text-align:center;
+    border:0 solid;
+    margin-right:6px;
+    margin-bottom:3px;
+    box-shadow: 1px 1px;
+    background-color: white;
+}
+.falta {
+    background-color: lightcoral;
+}
+.cromonum {
+    width:40px;
+    margin:2px;
+    font:bold 24px arial;
+    cursor: pointer;
+}
+.cromor {
+    display:flex;
+    justify-content:center;
+    font:18px arial;
+    padding:2px;
+}
+.cromotitle {
+    font:24px arial;
+    margin: 4px;
+}
+.hand {
+    cursor: pointer;
+}
+#divAuth {
+    padding:10px;
+}
+#divNav {
+    display:flex;background-color: black;color:white;padding:6px;cursor:pointer;
+}
+#divNav>div{
+    margin-left:6px;
+}
+#divIntro {
+    margin:10px
+}
