@@ -57,13 +57,15 @@
 <body>
     <div>
         <div id="divNav">
-            <div id=btnUser onclick="UI.user()">Utilizador</div>
-            <div>|</div>
             <div id=btnEditar onclick="UI.editar()">Editar</div>
             <div>|</div>
             <div id=btnGravar onclick="UI.gravar()">Gravar</div>
+            <div>|</div>
+            <div id=btnProcurar onclick="UI.procurar()">Procurar</div>
+            <div style="flex-grow:99"></div>
+            <div id=btnUser onclick="UI.user()">Utilizador</div>
         </div>
-        <div id="divAuth" style="display:none;background-color: bisque;">
+        <div id="divAuth" style="display:flex;background-color: bisque;">
             <div>
                 <div>Email</div>
                 <div><input type=text id="email" value="user@email.pt"></div>
@@ -79,9 +81,21 @@
         </div>
     </div>
 
-    <div style="margin:6px">
+    <div id="divEscolha" style="margin:6px;display:none;">
         <div>Colecções</div>
         <select id="divColecoes" onchange="UI.change()"><option>Escolha</option></select>
+    </div>
+
+    <div id="divIntro">
+        Instrucções
+        <ul>
+            <li>Para que serve<ul>
+            <li>Guardar</li>
+            <li>Procurar</li>
+            <li>Partilhar</li></ul></li>
+            <li>Sobre a Autenticação</li>
+            <li>Legenda</li>
+        </ul>
     </div>
 
     <div id="render" style="margin:10px;"></div>
@@ -93,18 +107,55 @@
 
 
     var UI={
+        redraw:function(){
+            if (autenticado){
+                document.getElementById("divAuth").style.display="none";
+                document.getElementById("divEscolha").style.display="block";
+                document.getElementById("btnUser").innerText=email.value;
+
+                var c=document.getElementById("divColecoes").value;            
+                if (c!="Escolha"){
+                    document.getElementById("divIntro").style.display="none";
+                    UI.unfreeze("btnEditar");
+                }
+                else
+                {
+                    document.getElementById("divIntro").style.display="block";
+                    UI.freeze("btnEditar");
+                }
+            }
+            else
+            {
+                document.getElementById("divAuth").style.display="flex";
+                document.getElementById("divEscolha").style.display="none";
+                document.getElementById("divColecoes").value="Escolha";
+                document.getElementById("render").style.display="none";
+                document.getElementById("divIntro").style.display="block";
+                UI.freeze("btnEditar");
+                UI.freeze("btnEditar");
+                UI.freeze("btnProcurar");
+            }
+        },
         change:async function(){
             var c=document.getElementById("divColecoes").value;
             var e=document.getElementById("email").value;
             var p=document.getElementById("password").value;
             
             if (c!="Escolha"){
-                let response = await fetch(`/api/load?c=${c}&e=${e}&p=${p}`);
-                let result = await response.json();
-                col=result;
-                document.getElementById("render").innerHTML=render(struct,"");
+                if (autenticado){
+                    let response = await fetch(`/api/load?c=${c}&e=${e}&p=${p}`);
+                    try {
+                        let result = await response.json();
+                        col=result;                    
+                    } catch (error) {
+                        col={falta:[],rep:[]}                        
+                    }
+                    console.log(JSON.stringify(col))
+                    document.getElementById("render").innerHTML=render(struct,"");
+                    document.getElementById("render").style.display="block";
+                }
             }
-
+            UI.redraw();
         },
         freeze:function(btn){
             document.getElementById(btn).style.color="gray";
@@ -113,9 +164,11 @@
             document.getElementById(btn).style.color="white";
         },
         user:function(){
-            document.getElementById("divAuth").style.display="flex";
-            UI.freeze("btnEditar");
-            UI.freeze("btnGravar");
+            autenticado=false;
+            UI.redraw();
+            // document.getElementById("divAuth").style.display="flex";
+            // UI.freeze("btnEditar");
+            // UI.freeze("btnGravar");
         },
         editar:function(){
             if (!autenticado){
@@ -125,44 +178,51 @@
             }
             else
             {
-                UI.freeze("btnEditar");
-                UI.unfreeze("btnGravar");
-                document.getElementById("render").innerHTML=render(struct,"EDIT");
+                var c=document.getElementById("divColecoes").value;
+                if (c!="Escolha"){
+                    UI.freeze("btnEditar");
+                    UI.unfreeze("btnGravar");
+                    document.getElementById("render").innerHTML=render(struct,"EDIT");
+                }
             }
         },
         auth:function(){
             autenticado=true;
-            document.getElementById("divAuth").style.display="none";
-            document.getElementById("btnUser").innerText=email.value;
-            UI.freeze("btnEditar");
-            UI.unfreeze("btnGravar");
-
-            document.getElementById("render").innerHTML=render(struct,"EDIT");
+            UI.redraw();
         },
         gravar:async function(){
-            var c=document.getElementById("divColecoes").value;
-            var e=document.getElementById("email").value;
-            var p=document.getElementById("password").value;
-            
-            if (c!="Escolha"){
-                let response = await fetch('/api/save', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json;charset=utf-8'
-                    },
-                    body: JSON.stringify({c:c,e:e,p:p,d:col})
-                });
-
-                let result = await response.json();
-                if (result=="true")
-                    alert("Gravado")
-                else
-                    alert(result)
+            if (!autenticado){
+                document.getElementById("divAuth").style.display="flex";
+                UI.freeze("btnEditar");
+                UI.freeze("btnGravar");
             }
-            UI.unfreeze("btnEditar");
-            UI.freeze("btnGravar");
+            else
+            {
+                var c=document.getElementById("divColecoes").value;
+                var e=document.getElementById("email").value;
+                var p=document.getElementById("password").value;
+                
+                if (c!="Escolha"){
+                    let response = await fetch('/api/save', {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify({c:c,e:e,p:p,d:col})
+                    });
 
-            document.getElementById("render").innerHTML=render(struct,"");
+                    let result = await response.json();
+                    if (result=="true")
+                        alert("Gravado")
+                    else
+                        alert(result)
+
+                    UI.unfreeze("btnEditar");
+                    UI.freeze("btnGravar");
+                    document.getElementById("render").innerHTML=render(struct,"");
+                }
+
+            }
         }
     }
         UI.freeze("btnEditar");
@@ -172,7 +232,7 @@
             title:"Qatar 2022",
             forceShow:true,
             options:[
-                {title:"FWC",options:[{min:0,max:28}]},
+                {title:"FWC",options:[{min:0,max:29}]},
                 {title:"ARG",options:[{min:1,max:20}]},
                 {title:"AUS",options:[{min:1,max:20}]},
                 {title:"BEL",options:[{min:1,max:20}]},
@@ -212,7 +272,6 @@
         //var col={falta:['DEN_16'],rep:[{id:'DEN_17',v:1},{id:'DEN_19',v:1},{id:'WAL_20',v:2}]}
 
         function falta(id){
-            console.log(id)
             var c=document.getElementById(id).className;
             if (c.indexOf(" falta")>-1){
                 document.getElementById(id).className=c.replace(" falta","");
@@ -225,7 +284,6 @@
                 document.getElementById(id).className+=" falta";
                 document.getElementById(id + "_e").style.display="none";
             }
-            console.log(col)
         }
         function repet(id,dir){
             var idCor=id.substring(0,id.length-2);
@@ -243,7 +301,6 @@
             }
             if (dir)
                 document.getElementById(id).innerHTML=v;
-                console.log(col)
         }
         function render(elem,displayMode){
             var s="";
@@ -315,7 +372,7 @@
             return s;
         }
        
-        //document.getElementById("render").innerHTML=render(struct,"");
+        UI.redraw();
 
         var col={
             falta:['DEN_16','USA_19'],

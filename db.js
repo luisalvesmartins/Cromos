@@ -12,13 +12,18 @@ class DB
               return console.error(err.message);
             }
           });
-        
-        //   await this.exec(`CREATE TABLE cromos (
-        //     colecao text not null,
-        //     email text not null,
-        //     password text not null,
-        //     data text not null,
-        //     PRIMARY KEY(colecao,email,password))`);
+          try {
+            var r=await this.queryAsync("SELECT 1 FROM cromos");
+          } catch (error) {
+            await this.run(`CREATE TABLE cromos (
+                colecao text not null,
+                email text not null,
+                password text not null,
+                data text not null,
+                lastupdate text,
+                PRIMARY KEY(colecao,email,password))`);
+          }
+
     }
         // this.db.queryAsync = function (...args) {
         //     var that = this;
@@ -115,10 +120,10 @@ class DB
     async insertAsync(colecao, email, password, data){
         console.log("INSERTING")
         return await this.run(`INSERT INTO cromos
-        (colecao,email,password,data) 
-        VALUES(?,?,?,?) 
+        (colecao,email,password,data,lastupdate) 
+        VALUES(?,?,?,?,?) 
         ON CONFLICT(colecao,email,password) 
-        DO UPDATE SET data=excluded.data`, colecao,email,password,data);
+        DO UPDATE SET data=excluded.data`, colecao,email,password,data, Date.now);
     }
 
     async queryOneAsync(colecao, email, password){
@@ -134,27 +139,27 @@ class DB
     }
     
 
-    queryOne(colecao, email, password){
+    // queryOne(colecao, email, password){
 
-        this.db.serialize(() => {
-        var sql=`SELECT data
-            FROM cromos 
-            WHERE colecao='${colecao}' 
-                AND email='${email}' 
-                AND password='${password}'`
-        //db.each
-        this.db.get(sql, (err, row) => {
-            if (err) {
-                console.error(err.message);
-                return null;
-            }
-            if (row)
-                return row;
-            else
-                return null;
-            });
-        });
-        }
+    //     this.db.serialize(() => {
+    //     var sql=`SELECT data
+    //         FROM cromos 
+    //         WHERE colecao='${colecao}' 
+    //             AND email='${email}' 
+    //             AND password='${password}'`
+    //     //db.each
+    //     this.db.get(sql, (err, row) => {
+    //         if (err) {
+    //             console.error(err.message);
+    //             return null;
+    //         }
+    //         if (row)
+    //             return row;
+    //         else
+    //             return null;
+    //         });
+    //     });
+    //     }
         
         close(fn) {
             if (!this.db) {
